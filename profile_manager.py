@@ -147,87 +147,87 @@ def normalize(value, minimum, maximum):
 # ============================================================
 
 def calculate_unknown_group_distance(
-    trip,
-    group_average,
+    trip_a,
+    trip_b,
     all_trips
 ):
 
-    speeds = [
-        t["average_speed"]
-        for t in all_trips
-    ]
+    SPEED_MIN = 0.0
+    SPEED_MAX = 120.0
 
-    accelerations = [
-        t["average_acceleration"]
-        for t in all_trips
-    ]
+    ACCELERATION_MIN = 0.0
+    ACCELERATION_MAX = 4.0
 
-    braking_rates = [
-        t["hard_braking_rate"]
-        for t in all_trips
-    ]
+    BRAKING_MIN = 0.0
+    BRAKING_MAX = 10.0
 
 
-    speed_min = min(speeds)
-    speed_max = max(speeds)
+    # --------------------------------------------------------
+    # Speed
+    # --------------------------------------------------------
 
-    acceleration_min = min(accelerations)
-    acceleration_max = max(accelerations)
-
-    braking_min = min(braking_rates)
-    braking_max = max(braking_rates)
-
-
-    trip_speed = normalize(
-        trip["average_speed"],
-        speed_min,
-        speed_max
+    speed_a = normalize(
+        trip_a["average_speed"],
+        SPEED_MIN,
+        SPEED_MAX
     )
 
-    group_speed = normalize(
-        group_average["average_speed"],
-        speed_min,
-        speed_max
+    speed_b = normalize(
+        trip_b["average_speed"],
+        SPEED_MIN,
+        SPEED_MAX
     )
 
 
-    trip_acceleration = normalize(
-        trip["average_acceleration"],
-        acceleration_min,
-        acceleration_max
+    # --------------------------------------------------------
+    # Acceleration
+    # --------------------------------------------------------
+
+    acceleration_a = normalize(
+        trip_a["average_acceleration"],
+        ACCELERATION_MIN,
+        ACCELERATION_MAX
     )
 
-    group_acceleration = normalize(
-        group_average["average_acceleration"],
-        acceleration_min,
-        acceleration_max
+    acceleration_b = normalize(
+        trip_b["average_acceleration"],
+        ACCELERATION_MIN,
+        ACCELERATION_MAX
     )
 
 
-    trip_braking = normalize(
-        trip["hard_braking_rate"],
-        braking_min,
-        braking_max
+    # --------------------------------------------------------
+    # Hard braking
+    # --------------------------------------------------------
+
+    braking_a = normalize(
+        trip_a["hard_braking_rate"],
+        BRAKING_MIN,
+        BRAKING_MAX
     )
 
-    group_braking = normalize(
-        group_average["hard_braking_rate"],
-        braking_min,
-        braking_max
+    braking_b = normalize(
+        trip_b["hard_braking_rate"],
+        BRAKING_MIN,
+        BRAKING_MAX
     )
 
+
+    # --------------------------------------------------------
+    # Euclidean distance
+    # --------------------------------------------------------
 
     distance = math.sqrt(
 
-        (trip_speed - group_speed) ** 2
+        (speed_a - speed_b) ** 2
 
         +
 
-        (trip_acceleration - group_acceleration) ** 2
+        (acceleration_a - acceleration_b) ** 2
 
         +
 
-        (trip_braking - group_braking) ** 2
+        (braking_a - braking_b) ** 2
 
     )
 
@@ -305,47 +305,54 @@ def check_unknown_group():
         return False, None
 
 
-    # Use all collected unknown trips
-    # to calculate the current group behaviour.
-
-    group_average = calculate_group_average(
-        trips
-    )
-
-
-    # Compare every trip against the group average.
+    # --------------------------------------------------------
+    # Compare every unknown trip with every other trip.
+    # --------------------------------------------------------
 
     distances = []
 
-    for trip in trips:
 
-        distance = calculate_unknown_group_distance(
-            trip,
-            group_average,
-            trips
-        )
+    for i in range(len(trips)):
 
-        distances.append(distance)
+        for j in range(i + 1, len(trips)):
+
+            trip_a = trips[i]
+            trip_b = trips[j]
 
 
-    average_distance = (
-        sum(distances)
-        /
-        len(distances)
-    )
+            # Use trip_a as the "group average" argument.
+            # The function only needs the feature values.
+            distance = calculate_unknown_group_distance(
+                trip_b,
+                trip_a,
+                trips
+            )
+
+
+            distances.append(distance)
+
+
+    # --------------------------------------------------------
+    # Find the largest difference.
+    #
+    # We use the maximum rather than the average because
+    # EVERY trip should be reasonably similar.
+    # --------------------------------------------------------
+
+    max_distance = max(distances)
 
 
     print(
-        f"\n>>> Unknown-group distance: "
-        f"{average_distance:.3f}"
+        f"\n>>> Maximum unknown-trip distance: "
+        f"{max_distance:.3f}"
     )
 
 
     # --------------------------------------------------------
-    # Decide whether the trips are similar enough.
+    # Consistent group
     # --------------------------------------------------------
 
-    if average_distance <= UNKNOWN_GROUP_THRESHOLD:
+    if max_distance <= UNKNOWN_GROUP_THRESHOLD:
 
         profile_id = get_next_profile_id()
 
@@ -373,6 +380,10 @@ def check_unknown_group():
         return True, new_profile
 
 
+    # --------------------------------------------------------
+    # Inconsistent group
+    # --------------------------------------------------------
+
     print(
         "\n>>> UNKNOWN TRIPS ARE TOO DIFFERENT"
     )
@@ -383,7 +394,6 @@ def check_unknown_group():
 
 
     return False, None
-
 
 # ============================================================
 # TEST

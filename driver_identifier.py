@@ -350,28 +350,27 @@ if __name__ == "__main__":
 
     test_trips = [
 
-        {
-            "name": "Unknown Trip A",
-            "average_speed": 60.0,
-            "average_acceleration": 0.05,
-            "hard_braking_rate": 8.0
-        },
+    {
+        "name": "Unknown Trip A",
+        "average_speed": 60.0,
+        "average_acceleration": 0.05,
+        "hard_braking_rate": 8.0
+    },
 
-        {
-            "name": "Unknown Trip B",
-            "average_speed": 45.0,
-            "average_acceleration": 0.05,
-            "hard_braking_rate": 0.0
-        },
+    {
+        "name": "Unknown Trip B",
+        "average_speed": 68.0,
+        "average_acceleration": 0.50,
+        "hard_braking_rate": 1.0
+    },
 
-        {
-            "name": "Unknown Trip C",
-            "average_speed": 80.0,
-            "average_acceleration": 0.40,
-            "hard_braking_rate": 5.0
-        }
-    ]
-
+    {
+        "name": "Unknown Trip C",
+        "average_speed": 52.0,
+        "average_acceleration": 0.15,
+        "hard_braking_rate": 6.0
+    }
+]
 
     for trip in test_trips:
 
