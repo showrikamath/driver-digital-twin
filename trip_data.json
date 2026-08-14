@@ -103,5 +103,12 @@
         "average_acceleration": 0.28,
         "hard_braking_events": 2,
         "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 71.35,
+        "average_acceleration": 0.34,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
     }
 ]
