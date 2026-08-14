@@ -1,32 +1,9 @@
 [
     {
-        "average_speed": 60.0,
-        "average_acceleration": 0.05,
-        "hard_braking_rate": 8.0
-    },
-    {
-        "average_speed": 68.0,
-        "average_acceleration": 0.5,
-        "hard_braking_rate": 1.0
-    },
-    {
-        "average_speed": 52.0,
-        "average_acceleration": 0.15,
-        "hard_braking_rate": 6.0
-    },
-    {
-        "average_speed": 60.0,
-        "average_acceleration": 0.05,
-        "hard_braking_rate": 8.0
-    },
-    {
-        "average_speed": 68.0,
-        "average_acceleration": 0.5,
-        "hard_braking_rate": 1.0
-    },
-    {
-        "average_speed": 52.0,
-        "average_acceleration": 0.15,
-        "hard_braking_rate": 6.0
+        "driver_style": "aggressive",
+        "average_speed": 75.21,
+        "average_acceleration": 0.29,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
     }
 ]

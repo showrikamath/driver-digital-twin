@@ -106,9 +106,30 @@
     },
     {
         "driver_style": "aggressive",
-        "average_speed": 71.35,
-        "average_acceleration": 0.34,
+        "average_speed": 71.26,
+        "average_acceleration": 0.25,
         "hard_braking_events": 1,
         "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 76.15,
+        "average_acceleration": 0.39,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 71.62,
+        "average_acceleration": 0.26,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 74.95,
+        "average_acceleration": 0.3,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
     }
 ]

@@ -2,15 +2,8 @@
     {
         "driver_id": "driver_1",
         "trip_count": 3,
-        "average_speed": 61.0,
-        "average_acceleration": 0.05,
-        "hard_braking_rate": 7.67
-    },
-    {
-        "driver_id": "driver_2",
-        "trip_count": 3,
-        "average_speed": 60.0,
-        "average_acceleration": 0.233,
-        "hard_braking_rate": 5.0
+        "average_speed": 77.33,
+        "average_acceleration": 0.347,
+        "hard_braking_rate": 0.0
     }
 ]

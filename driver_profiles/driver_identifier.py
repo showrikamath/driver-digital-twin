@@ -1,12 +1,14 @@
 import math
 
-from profile_builder import build_profiles
+from driver_profiles.profile_builder import build_profiles
 
-from profile_manager import (
+from driver_profiles.profile_manager import (
     add_unknown_trip,
-    get_unknown_trips,
     check_unknown_group,
+    load_profiles,
 )
+
+from digital_twin.digital_twin import DigitalTwin
 
 
 # ============================================================
@@ -88,9 +90,24 @@ def calculate_distance(trip, profile, ranges):
 # DRIVER IDENTIFICATION
 # ============================================================
 
-def identify_driver(trip):
+def identify_driver(trip, twin=None):
 
     profiles = build_profiles()
+
+    dynamic_profiles = load_profiles()
+
+    for profile in dynamic_profiles:
+
+        profiles[profile["driver_id"]] = {
+            "average_speed":
+                profile["average_speed"],
+
+            "average_acceleration":
+                profile["average_acceleration"],
+
+            "hard_braking_rate":
+                profile["hard_braking_rate"]
+    }
 
     # --------------------------------------------------------
     # No reference profiles
@@ -99,6 +116,13 @@ def identify_driver(trip):
     if not profiles:
 
         add_unknown_trip(trip)
+
+        if twin:
+            twin.update_driver_state(
+                driver_profile="UNKNOWN",
+                identification_distance=None,
+                confidence=0.0
+            )
 
         return (
             "UNKNOWN",
@@ -183,6 +207,22 @@ def identify_driver(trip):
 
     if closest_distance <= DISTANCE_THRESHOLD:
 
+        # Convert distance into a simple confidence score.
+        confidence = max(
+            0.0,
+            1.0 - (
+                closest_distance
+                / DISTANCE_THRESHOLD
+            )
+        )
+
+        if twin:
+            twin.update_driver_state(
+                driver_profile=closest_driver,
+                identification_distance=closest_distance,
+                confidence=confidence
+            )
+
         return (
             closest_driver,
             distances,
@@ -215,6 +255,13 @@ def identify_driver(trip):
 
     if unknown_count < 3:
 
+        if twin:
+            twin.update_driver_state(
+                driver_profile="UNKNOWN",
+                identification_distance=closest_distance,
+                confidence=0.0
+            )
+
         return (
             "UNKNOWN",
             distances,
@@ -224,9 +271,7 @@ def identify_driver(trip):
 
 
     # --------------------------------------------------------
-    # We have enough observations.
-    #
-    # Now check whether they actually behave similarly.
+    # Check unknown group
     # --------------------------------------------------------
 
     profile_created, new_profile = (
@@ -234,10 +279,23 @@ def identify_driver(trip):
     )
 
 
+    # --------------------------------------------------------
+    # New driver profile created
+    # --------------------------------------------------------
+
     if profile_created:
 
+        new_driver_id = new_profile["driver_id"]
+
+        if twin:
+            twin.update_driver_state(
+                driver_profile=new_driver_id,
+                identification_distance=closest_distance,
+                confidence=0.0
+            )
+
         return (
-            new_profile["driver_id"],
+            new_driver_id,
             distances,
             closest_distance,
             True
@@ -245,8 +303,15 @@ def identify_driver(trip):
 
 
     # --------------------------------------------------------
-    # Trips were too different.
+    # Trips were too different
     # --------------------------------------------------------
+
+    if twin:
+        twin.update_driver_state(
+            driver_profile="UNKNOWN",
+            identification_distance=closest_distance,
+            confidence=0.0
+        )
 
     return (
         "UNKNOWN",
@@ -290,7 +355,6 @@ def display_result(
         f"{trip['hard_braking_rate']:.2f}%"
     )
 
-
     print("\nDistances:")
 
     for style, distance in distances.items():
@@ -299,7 +363,6 @@ def display_result(
             f"{style.capitalize():12} → "
             f"{distance:.3f}"
         )
-
 
     if closest_distance is not None:
 
@@ -313,9 +376,7 @@ def display_result(
             f"{DISTANCE_THRESHOLD:.3f}"
         )
 
-
     print("\n" + "-" * 60)
-
 
     if driver == "UNKNOWN":
 
@@ -338,7 +399,6 @@ def display_result(
             f"{driver.upper()}"
         )
 
-
     print("-" * 60)
 
 
@@ -348,29 +408,31 @@ def display_result(
 
 if __name__ == "__main__":
 
+    twin = DigitalTwin()
+
     test_trips = [
 
-    {
-        "name": "Unknown Trip A",
-        "average_speed": 60.0,
-        "average_acceleration": 0.05,
-        "hard_braking_rate": 8.0
-    },
+        {
+            "name": "Unknown Trip A",
+            "average_speed": 60.0,
+            "average_acceleration": 0.05,
+            "hard_braking_rate": 8.0
+        },
 
-    {
-        "name": "Unknown Trip B",
-        "average_speed": 68.0,
-        "average_acceleration": 0.50,
-        "hard_braking_rate": 1.0
-    },
+        {
+            "name": "Unknown Trip B",
+            "average_speed": 68.0,
+            "average_acceleration": 0.50,
+            "hard_braking_rate": 1.0
+        },
 
-    {
-        "name": "Unknown Trip C",
-        "average_speed": 52.0,
-        "average_acceleration": 0.15,
-        "hard_braking_rate": 6.0
-    }
-]
+        {
+            "name": "Unknown Trip C",
+            "average_speed": 52.0,
+            "average_acceleration": 0.15,
+            "hard_braking_rate": 6.0
+        }
+    ]
 
     for trip in test_trips:
 
@@ -382,10 +444,8 @@ if __name__ == "__main__":
 
         print("#" * 60)
 
-
-        # Remove the name because it isn't
-        # part of the behavioural metrics.
         trip_data = {
+
             "average_speed":
                 trip["average_speed"],
 
@@ -396,20 +456,27 @@ if __name__ == "__main__":
                 trip["hard_braking_rate"]
         }
 
-
         (
             driver,
             distances,
             closest_distance,
             is_unknown
         ) = identify_driver(
-            trip_data
+            trip_data,
+            twin
         )
-
 
         display_result(
             trip_data,
             driver,
             distances,
             closest_distance
+        )
+
+        print(
+            "\nDIGITAL TWIN DRIVER STATE:"
+        )
+
+        print(
+            twin.get_state()
         )

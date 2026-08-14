@@ -3,8 +3,10 @@ import math
 from pathlib import Path
 
 
-PROFILE_FILE = Path("driver_profiles.json")
-UNKNOWN_TRIPS_FILE = Path("unknown_trips.json")
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+PROFILE_FILE = BASE_DIR / "driver_profiles.json"
+UNKNOWN_TRIPS_FILE = BASE_DIR / "unknown_trips.json"
 
 MIN_TRIPS_FOR_NEW_PROFILE = 3
 UNKNOWN_GROUP_THRESHOLD = 0.5

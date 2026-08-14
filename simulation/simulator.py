@@ -1,7 +1,8 @@
 import random
 import time
 
-from trip_data import save_trip
+from simulation.trip_data import save_trip
+from digital_twin.digital_twin import DigitalTwin
 
 
 # ============================================================
@@ -49,7 +50,8 @@ TARGET_ADJUSTMENT_RATE = 0.20
 BRAKE_EVENT_CHECK_INTERVAL = 5
 BRAKE_COOLDOWN = 7
 
-FAST_MODE = True
+FAST_MODE = False
+
 
 
 # ============================================================
@@ -167,7 +169,7 @@ def generate_hard_braking():
 # MAIN SIMULATION FUNCTION
 # ============================================================
 
-def run_simulation(driver_style):
+def run_simulation(driver_style,twin=None,telemetry_callback=None):
 
     # --------------------------------------------------------
     # Select driver profile
@@ -175,6 +177,8 @@ def run_simulation(driver_style):
 
     driver = DRIVER_PROFILES[driver_style]
 
+    if twin is None:
+        twin = DigitalTwin()
 
     # --------------------------------------------------------
     # Initial vehicle state
@@ -197,12 +201,17 @@ def run_simulation(driver_style):
 
     speed_history = []
 
+    target_speed_history = []
+
+    desired_speed_history = []
+
     acceleration_history = []
 
     braking_history = []
 
     action_history = []
 
+    time_history = []
 
     # ========================================================
     # SIMULATION LOOP
@@ -295,12 +304,33 @@ def run_simulation(driver_style):
             acceleration
         )
 
+        twin.update_vehicle_state(
+        speed=current_speed,
+        desired_speed=desired_target_speed,
+        target_speed=current_target_speed,
+        acceleration=acceleration,
+        braking=braking,
+        action=action,
+        elapsed_time=simulation_time
+        )     
 
+        if telemetry_callback is not None:
+            telemetry_callback(
+            twin.get_state()
+            )
+
+        
         # ----------------------------------------------------
         # Store telemetry
         # ----------------------------------------------------
 
+        time_history.append(simulation_time)
+
         speed_history.append(current_speed)
+
+        target_speed_history.append(current_target_speed)
+
+        desired_speed_history.append(desired_target_speed)
 
         acceleration_history.append(acceleration)
 
@@ -442,7 +472,26 @@ def run_simulation(driver_style):
 
     # Return the trip so another program
     # can use its metrics.
-    return trip
+    return {
+        "trip": trip,
+
+        "telemetry": {
+
+            "time": time_history,
+
+            "speed": speed_history,
+
+            "target_speed": target_speed_history,
+
+            "desired_speed": desired_speed_history,
+
+            "acceleration": acceleration_history,
+
+            "braking": braking_history,
+
+            "action": action_history
+        }
+    }
 
 
 # ============================================================
