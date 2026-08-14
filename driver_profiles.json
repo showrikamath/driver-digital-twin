@@ -2,8 +2,29 @@
     {
         "driver_id": "driver_1",
         "trip_count": 3,
-        "average_speed": 77.33,
-        "average_acceleration": 0.347,
-        "hard_braking_rate": 0.0
+        "average_speed": 51.76,
+        "average_acceleration": 0.167,
+        "hard_braking_rate": 4.44
+    },
+    {
+        "driver_id": "driver_2",
+        "trip_count": 3,
+        "average_speed": 53.94,
+        "average_acceleration": 0.147,
+        "hard_braking_rate": 2.22
+    },
+    {
+        "driver_id": "driver_3",
+        "trip_count": 3,
+        "average_speed": 53.05,
+        "average_acceleration": 0.16,
+        "hard_braking_rate": 4.44
+    },
+    {
+        "driver_id": "driver_4",
+        "trip_count": 3,
+        "average_speed": 53.17,
+        "average_acceleration": 0.163,
+        "hard_braking_rate": 3.33
     }
 ]

@@ -1,13 +1,11 @@
 import math
 
 from driver_profiles.profile_builder import build_profiles
-
 from driver_profiles.profile_manager import (
     add_unknown_trip,
     check_unknown_group,
     load_profiles,
 )
-
 from digital_twin.digital_twin import DigitalTwin
 
 
@@ -15,7 +13,34 @@ from digital_twin.digital_twin import DigitalTwin
 # CONFIGURATION
 # ============================================================
 
-DISTANCE_THRESHOLD = 0.5
+# IMPORTANT:
+# These are fixed feature ranges for driver identification.
+# Do NOT calculate them from the current profiles.
+#
+# The old version used min/max values from the available
+# profiles. That made the distance scale change whenever a
+# dynamic driver profile was added, which could turn a normal
+# known driver into UNKNOWN.
+#
+# These ranges match the simulation's feature space.
+SPEED_MIN = 0.0
+SPEED_MAX = 100.0
+
+ACCELERATION_MIN = -4.0
+ACCELERATION_MAX = 4.0
+
+BRAKING_MIN = -10.0
+BRAKING_MAX = 0.0
+
+# Maximum normalized Euclidean distance accepted as a known
+# driver. This is intentionally moderate so genuinely different
+# behaviour can still become UNKNOWN.
+DISTANCE_THRESHOLD = 0.55
+
+# Minimum confidence we display for an accepted known profile.
+# This does NOT force recognition; the distance threshold still
+# decides whether the driver is known.
+MIN_ACCEPTED_CONFIDENCE = 0.05
 
 
 # ============================================================
@@ -27,9 +52,15 @@ def normalize(value, minimum, maximum):
     if maximum == minimum:
         return 0.0
 
-    return (
+    normalized = (
         (value - minimum)
         / (maximum - minimum)
+    )
+
+    # Keep values inside the feature space.
+    return max(
+        0.0,
+        min(1.0, normalized)
     )
 
 
@@ -37,42 +68,42 @@ def normalize(value, minimum, maximum):
 # EUCLIDEAN DISTANCE
 # ============================================================
 
-def calculate_distance(trip, profile, ranges):
+def calculate_distance(trip, profile):
 
     trip_speed = normalize(
         trip["average_speed"],
-        ranges["speed_min"],
-        ranges["speed_max"]
+        SPEED_MIN,
+        SPEED_MAX
     )
 
     profile_speed = normalize(
         profile["average_speed"],
-        ranges["speed_min"],
-        ranges["speed_max"]
+        SPEED_MIN,
+        SPEED_MAX
     )
 
     trip_acceleration = normalize(
         trip["average_acceleration"],
-        ranges["acceleration_min"],
-        ranges["acceleration_max"]
+        ACCELERATION_MIN,
+        ACCELERATION_MAX
     )
 
     profile_acceleration = normalize(
         profile["average_acceleration"],
-        ranges["acceleration_min"],
-        ranges["acceleration_max"]
+        ACCELERATION_MIN,
+        ACCELERATION_MAX
     )
 
     trip_braking = normalize(
-        trip["hard_braking_rate"],
-        ranges["braking_min"],
-        ranges["braking_max"]
+        -abs(trip["hard_braking_rate"]),
+        BRAKING_MIN,
+        BRAKING_MAX
     )
 
     profile_braking = normalize(
-        profile["hard_braking_rate"],
-        ranges["braking_min"],
-        ranges["braking_max"]
+        -abs(profile["hard_braking_rate"]),
+        BRAKING_MIN,
+        BRAKING_MAX
     )
 
     distance = math.sqrt(
@@ -87,18 +118,52 @@ def calculate_distance(trip, profile, ranges):
 
 
 # ============================================================
+# CONFIDENCE
+# ============================================================
+
+def calculate_confidence(distance):
+
+    if distance >= DISTANCE_THRESHOLD:
+        return 0.0
+
+    confidence = (
+        1.0
+        -
+        (
+            distance
+            /
+            DISTANCE_THRESHOLD
+        )
+    )
+
+    return max(
+        MIN_ACCEPTED_CONFIDENCE,
+        min(1.0, confidence)
+    )
+
+
+# ============================================================
 # DRIVER IDENTIFICATION
 # ============================================================
 
 def identify_driver(trip, twin=None):
 
+    # --------------------------------------------------------
+    # Load built-in reference profiles.
+    # --------------------------------------------------------
+
     profiles = build_profiles()
+
+    # --------------------------------------------------------
+    # Add dynamically learned profiles.
+    # --------------------------------------------------------
 
     dynamic_profiles = load_profiles()
 
     for profile in dynamic_profiles:
 
         profiles[profile["driver_id"]] = {
+
             "average_speed":
                 profile["average_speed"],
 
@@ -107,10 +172,10 @@ def identify_driver(trip, twin=None):
 
             "hard_braking_rate":
                 profile["hard_braking_rate"]
-    }
+        }
 
     # --------------------------------------------------------
-    # No reference profiles
+    # No profiles available.
     # --------------------------------------------------------
 
     if not profiles:
@@ -118,6 +183,7 @@ def identify_driver(trip, twin=None):
         add_unknown_trip(trip)
 
         if twin:
+
             twin.update_driver_state(
                 driver_profile="UNKNOWN",
                 identification_distance=None,
@@ -131,64 +197,23 @@ def identify_driver(trip, twin=None):
             True
         )
 
-
     # --------------------------------------------------------
-    # Feature ranges
-    # --------------------------------------------------------
-
-    speeds = [
-        profile["average_speed"]
-        for profile in profiles.values()
-    ]
-
-    accelerations = [
-        profile["average_acceleration"]
-        for profile in profiles.values()
-    ]
-
-    braking_rates = [
-        profile["hard_braking_rate"]
-        for profile in profiles.values()
-    ]
-
-    ranges = {
-
-        "speed_min": min(speeds),
-        "speed_max": max(speeds),
-
-        "acceleration_min":
-            min(accelerations),
-
-        "acceleration_max":
-            max(accelerations),
-
-        "braking_min":
-            min(braking_rates),
-
-        "braking_max":
-            max(braking_rates)
-    }
-
-
-    # --------------------------------------------------------
-    # Calculate distances
+    # Calculate distance to every profile.
     # --------------------------------------------------------
 
     distances = {}
 
-    for style, profile in profiles.items():
+    for driver_id, profile in profiles.items():
 
         distance = calculate_distance(
             trip,
-            profile,
-            ranges
+            profile
         )
 
-        distances[style] = distance
-
+        distances[driver_id] = distance
 
     # --------------------------------------------------------
-    # Find closest profile
+    # Closest profile.
     # --------------------------------------------------------
 
     closest_driver = min(
@@ -200,23 +225,58 @@ def identify_driver(trip, twin=None):
         closest_driver
     ]
 
+    confidence = calculate_confidence(
+        closest_distance
+    )
 
     # --------------------------------------------------------
-    # KNOWN DRIVER
+    # Diagnostic information.
     # --------------------------------------------------------
+
+    print("\n>>> DRIVER MATCHING")
+
+    print(
+        f">>> Closest profile: "
+        f"{closest_driver.upper()}"
+    )
+
+    print(
+        f">>> Distance: "
+        f"{closest_distance:.3f}"
+    )
+
+    print(
+        f">>> Threshold: "
+        f"{DISTANCE_THRESHOLD:.3f}"
+    )
+
+    print(
+        f">>> Confidence: "
+        f"{confidence * 100:.1f}%"
+    )
+
+    # Show all distances so the matching process is visible
+    # during the presentation/demo.
+    print("\n>>> Profile distances:")
+
+    for driver_id, distance in sorted(
+        distances.items(),
+        key=lambda item: item[1]
+    ):
+
+        print(
+            f"    {driver_id:12} "
+            f"→ {distance:.3f}"
+        )
+
+    # ========================================================
+    # KNOWN DRIVER
+    # ========================================================
 
     if closest_distance <= DISTANCE_THRESHOLD:
 
-        # Convert distance into a simple confidence score.
-        confidence = max(
-            0.0,
-            1.0 - (
-                closest_distance
-                / DISTANCE_THRESHOLD
-            )
-        )
-
         if twin:
+
             twin.update_driver_state(
                 driver_profile=closest_driver,
                 identification_distance=closest_distance,
@@ -229,7 +289,6 @@ def identify_driver(trip, twin=None):
             closest_distance,
             False
         )
-
 
     # ========================================================
     # UNKNOWN DRIVER
@@ -248,14 +307,26 @@ def identify_driver(trip, twin=None):
         f"{unknown_count}/3"
     )
 
-
     # --------------------------------------------------------
-    # Need at least 3 observations
+    # First / second unknown observation.
     # --------------------------------------------------------
 
     if unknown_count < 3:
 
+        remaining = 3 - unknown_count
+
+        print(
+            f">>> More evidence required."
+        )
+
+        print(
+            f">>> Waiting for "
+            f"{remaining} more "
+            f"unknown trip(s)."
+        )
+
         if twin:
+
             twin.update_driver_state(
                 driver_profile="UNKNOWN",
                 identification_distance=closest_distance,
@@ -269,29 +340,44 @@ def identify_driver(trip, twin=None):
             True
         )
 
+    # ========================================================
+    # THREE UNKNOWN TRIPS AVAILABLE
+    # ========================================================
 
-    # --------------------------------------------------------
-    # Check unknown group
-    # --------------------------------------------------------
+    print(
+        "\n>>> Three unknown trips collected."
+    )
+
+    print(
+        ">>> Checking whether they represent "
+        "one consistent new driver..."
+    )
 
     profile_created, new_profile = (
         check_unknown_group()
     )
 
-
     # --------------------------------------------------------
-    # New driver profile created
+    # New driver successfully created.
     # --------------------------------------------------------
 
     if profile_created:
 
-        new_driver_id = new_profile["driver_id"]
+        new_driver_id = (
+            new_profile["driver_id"]
+        )
+
+        print(
+            f">>> NEW DRIVER CREATED: "
+            f"{new_driver_id.upper()}"
+        )
 
         if twin:
+
             twin.update_driver_state(
                 driver_profile=new_driver_id,
                 identification_distance=closest_distance,
-                confidence=0.0
+                confidence=confidence
             )
 
         return (
@@ -301,12 +387,24 @@ def identify_driver(trip, twin=None):
             True
         )
 
+    # --------------------------------------------------------
+    # Three trips were not consistent.
+    # --------------------------------------------------------
 
-    # --------------------------------------------------------
-    # Trips were too different
-    # --------------------------------------------------------
+    print(
+        "\n>>> Trips were not consistent enough."
+    )
+
+    print(
+        ">>> No new driver profile was created."
+    )
+
+    print(
+        ">>> More evidence is required."
+    )
 
     if twin:
+
         twin.update_driver_state(
             driver_profile="UNKNOWN",
             identification_distance=closest_distance,
@@ -322,7 +420,7 @@ def identify_driver(trip, twin=None):
 
 
 # ============================================================
-# DISPLAY
+# DISPLAY RESULT
 # ============================================================
 
 def display_result(
@@ -357,7 +455,10 @@ def display_result(
 
     print("\nDistances:")
 
-    for style, distance in distances.items():
+    for style, distance in sorted(
+        distances.items(),
+        key=lambda item: item[1]
+    ):
 
         print(
             f"{style.capitalize():12} → "
@@ -374,6 +475,11 @@ def display_result(
         print(
             f"Threshold: "
             f"{DISTANCE_THRESHOLD:.3f}"
+        )
+
+        print(
+            f"Confidence: "
+            f"{calculate_confidence(closest_distance) * 100:.1f}%"
         )
 
     print("\n" + "-" * 60)
@@ -413,36 +519,41 @@ if __name__ == "__main__":
     test_trips = [
 
         {
-            "name": "Unknown Trip A",
+            "name": "Test Calm",
+            "average_speed": 50.0,
+            "average_acceleration": 0.35,
+            "hard_braking_rate": 3.33
+        },
+
+        {
+            "name": "Test Normal",
             "average_speed": 60.0,
-            "average_acceleration": 0.05,
-            "hard_braking_rate": 8.0
+            "average_acceleration": 0.35,
+            "hard_braking_rate": 3.33
         },
 
         {
-            "name": "Unknown Trip B",
-            "average_speed": 68.0,
-            "average_acceleration": 0.50,
-            "hard_braking_rate": 1.0
-        },
-
-        {
-            "name": "Unknown Trip C",
-            "average_speed": 52.0,
-            "average_acceleration": 0.15,
-            "hard_braking_rate": 6.0
+            "name": "Test Aggressive",
+            "average_speed": 75.0,
+            "average_acceleration": 0.35,
+            "hard_braking_rate": 3.33
         }
     ]
 
     for trip in test_trips:
 
-        print("\n\n" + "#" * 60)
+        print(
+            "\n\n"
+            + "#" * 60
+        )
 
         print(
             f"TESTING: {trip['name']}"
         )
 
-        print("#" * 60)
+        print(
+            "#" * 60
+        )
 
         trip_data = {
 

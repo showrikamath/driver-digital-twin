@@ -4,25 +4,24 @@ import matplotlib.pyplot as plt
 class LiveDashboard:
 
     def __init__(self):
-
         self.fig = plt.figure(
-            figsize=(10, 5)
+            figsize=(13, 11)
         )
 
         grid = self.fig.add_gridspec(
             4,
             1,
             height_ratios=[
-                0.7,
+                1.25,
                 2.2,
                 2.2,
                 2.2
             ],
-            hspace=0.55
+            hspace=0.45
         )
 
         # ====================================================
-        # HEADER
+        # HEADER / DIGITAL TWIN FEEDBACK
         # ====================================================
 
         self.header = self.fig.add_subplot(
@@ -37,10 +36,17 @@ class LiveDashboard:
             "DRIVER DIGITAL TWIN\n\n"
             "Profile: IDENTIFYING...    "
             "Confidence: --    "
-            "Action: IDLE",
+            "Action: IDLE    "
+            "Speed: -- km/h\n\n"
+            "DIGITAL TWIN FEEDBACK\n"
+            "Risk: --    "
+            "Behaviour: --    "
+            "Recommendation: --\n"
+            "Recommended Target: -- km/h    "
+            "Max Acceleration: -- m/s²",
             ha="center",
             va="center",
-            fontsize=13,
+            fontsize=10.5,
             fontweight="bold"
         )
 
@@ -81,7 +87,6 @@ class LiveDashboard:
         )
 
         self.ax_speed.legend()
-
         self.ax_speed.grid(True)
 
         # ====================================================
@@ -119,7 +124,6 @@ class LiveDashboard:
         )
 
         self.ax_accel.legend()
-
         self.ax_accel.grid(True)
 
         # ====================================================
@@ -197,6 +201,88 @@ class LiveDashboard:
             "action": []
         }
 
+        # Keep the latest Twin feedback so it remains visible
+        # even if the final driver identification happens later.
+        self.last_feedback = {
+            "risk_level": "--",
+            "behaviour_status": "--",
+            "feedback_action": "--",
+            "recommended_target_speed": None,
+            "max_acceleration": None
+        }
+
+    # ========================================================
+    # DIGITAL TWIN FEEDBACK
+    # ========================================================
+
+    def _update_feedback(self, twin_state):
+        """
+        Read feedback fields supplied by the simulator.
+
+        The .get() calls keep the dashboard compatible with
+        older Twin states until feedback is passed through.
+        """
+
+        if "risk_level" in twin_state:
+            self.last_feedback["risk_level"] = twin_state[
+                "risk_level"
+            ]
+
+        if "behaviour_status" in twin_state:
+            self.last_feedback["behaviour_status"] = twin_state[
+                "behaviour_status"
+            ]
+
+        if "feedback_action" in twin_state:
+            self.last_feedback["feedback_action"] = twin_state[
+                "feedback_action"
+            ]
+
+        if "recommended_target_speed" in twin_state:
+            self.last_feedback[
+                "recommended_target_speed"
+            ] = twin_state[
+                "recommended_target_speed"
+            ]
+
+        if "max_acceleration" in twin_state:
+            self.last_feedback[
+                "max_acceleration"
+            ] = twin_state[
+                "max_acceleration"
+            ]
+
+    def _feedback_text(self):
+        feedback = self.last_feedback
+
+        recommended_target = feedback[
+            "recommended_target_speed"
+        ]
+
+        max_acceleration = feedback[
+            "max_acceleration"
+        ]
+
+        target_text = (
+            f"{recommended_target:.2f} km/h"
+            if recommended_target is not None
+            else "--"
+        )
+
+        acceleration_text = (
+            f"{max_acceleration:.2f} m/s²"
+            if max_acceleration is not None
+            else "--"
+        )
+
+        return (
+            "DIGITAL TWIN FEEDBACK\n"
+            f"Risk: {feedback['risk_level']}    "
+            f"Behaviour: {feedback['behaviour_status']}    "
+            f"Recommendation: {feedback['feedback_action']}\n"
+            f"Recommended Target: {target_text}    "
+            f"Max Acceleration: {acceleration_text}"
+        )
 
     # ========================================================
     # UPDATE DASHBOARD
@@ -237,6 +323,14 @@ class LiveDashboard:
 
         self.telemetry["action"].append(
             twin_state["action"]
+        )
+
+        # ----------------------------------------------------
+        # Update Twin feedback
+        # ----------------------------------------------------
+
+        self._update_feedback(
+            twin_state
         )
 
         # ----------------------------------------------------
@@ -315,10 +409,14 @@ class LiveDashboard:
 
         self.header_text.set_text(
             "DRIVER DIGITAL TWIN\n\n"
-            f"Profile: {twin_state['driver_profile'].upper()}    "
-            f"Confidence: {twin_state['confidence']:.0%}    "
+            f"Profile: "
+            f"{twin_state['driver_profile'].upper()}    "
+            f"Confidence: "
+            f"{twin_state['confidence']:.0%}    "
             f"Action: {twin_state['action']}    "
-            f"Speed: {twin_state['speed']:.2f} km/h"
+            f"Speed: "
+            f"{twin_state['speed']:.2f} km/h\n\n"
+            f"{self._feedback_text()}"
         )
 
         # ----------------------------------------------------
@@ -336,11 +434,15 @@ class LiveDashboard:
         )
 
         self.footer.set_text(
-            f"Target: {twin_state['target_speed']:.2f} km/h    |    "
-            f"Acceleration: {twin_state['acceleration']:.2f} m/s²    |    "
-            f"Braking: {twin_state['braking']:.2f} m/s²    |    "
+            f"Target: "
+            f"{twin_state['target_speed']:.2f} km/h    |    "
+            f"Acceleration: "
+            f"{twin_state['acceleration']:.2f} m/s²    |    "
+            f"Braking: "
+            f"{twin_state['braking']:.2f} m/s²    |    "
             f"Distance: {distance_text}    |    "
-            f"Elapsed: {twin_state['elapsed_time']:.0f}s"
+            f"Elapsed: "
+            f"{twin_state['elapsed_time']:.0f}s"
         )
 
         # ----------------------------------------------------
@@ -352,7 +454,6 @@ class LiveDashboard:
 
         plt.pause(0.001)
 
-
     # ========================================================
     # FINAL UPDATE
     # ========================================================
@@ -361,6 +462,11 @@ class LiveDashboard:
         self,
         final_state
     ):
+
+        # Pick up any final feedback if supplied.
+        self._update_feedback(
+            final_state
+        )
 
         self.header_text.set_text(
             "DRIVER DIGITAL TWIN\n\n"
@@ -371,7 +477,8 @@ class LiveDashboard:
             f"Action: "
             f"{final_state['action']}    "
             f"Speed: "
-            f"{final_state['speed']:.2f} km/h"
+            f"{final_state['speed']:.2f} km/h\n\n"
+            f"{self._feedback_text()}"
         )
 
         distance = final_state[
@@ -385,22 +492,24 @@ class LiveDashboard:
         )
 
         self.footer.set_text(
-            f"Target: {final_state['target_speed']:.2f} km/h    |    "
-            f"Acceleration: {final_state['acceleration']:.2f} m/s²    |    "
-            f"Braking: {final_state['braking']:.2f} m/s²    |    "
+            f"Target: "
+            f"{final_state['target_speed']:.2f} km/h    |    "
+            f"Acceleration: "
+            f"{final_state['acceleration']:.2f} m/s²    |    "
+            f"Braking: "
+            f"{final_state['braking']:.2f} m/s²    |    "
             f"Distance: {distance_text}    |    "
-            f"Elapsed: {final_state['elapsed_time']:.0f}s"
+            f"Elapsed: "
+            f"{final_state['elapsed_time']:.0f}s"
         )
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-
 
     # ========================================================
     # CLOSE
     # ========================================================
 
     def close(self):
-
         plt.ioff()
         plt.close(self.fig)

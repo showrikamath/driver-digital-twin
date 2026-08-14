@@ -131,5 +131,369 @@
         "average_acceleration": 0.3,
         "hard_braking_events": 0,
         "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 76.99,
+        "average_acceleration": 0.43,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 64.88,
+        "average_acceleration": 0.3,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 72.5,
+        "average_acceleration": 0.28,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "calm",
+        "average_speed": 45.25,
+        "average_acceleration": 0.08,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 47.53,
+        "average_acceleration": 0.15,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 52.9,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 52.45,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "normal",
+        "average_speed": 58.4,
+        "average_acceleration": 0.19,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.81,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 49.7,
+        "average_acceleration": 0.12,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.18,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "calm",
+        "average_speed": 40.39,
+        "average_acceleration": 0.06,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "calm",
+        "average_speed": 47.77,
+        "average_acceleration": 0.11,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "normal",
+        "average_speed": 57.3,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 75.07,
+        "average_acceleration": 0.4,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 53.25,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 51.05,
+        "average_acceleration": 0.11,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.77,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "normal",
+        "average_speed": 58.58,
+        "average_acceleration": 0.23,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 53.61,
+        "average_acceleration": 0.12,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 53.38,
+        "average_acceleration": 0.15,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 47.59,
+        "average_acceleration": 0.08,
+        "hard_braking_events": 3,
+        "hard_braking_rate": 10.0
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.24,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 50.19,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 56.94,
+        "average_acceleration": 0.19,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "calm",
+        "average_speed": 48.32,
+        "average_acceleration": 0.08,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "normal",
+        "average_speed": 53.52,
+        "average_acceleration": 0.12,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 74.46,
+        "average_acceleration": 0.25,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 50.23,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.32,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 52.93,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "calm",
+        "average_speed": 45.83,
+        "average_acceleration": 0.07,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "normal",
+        "average_speed": 53.17,
+        "average_acceleration": 0.14,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "normal",
+        "average_speed": 64.12,
+        "average_acceleration": 0.24,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 77.69,
+        "average_acceleration": 0.44,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "aggressive",
+        "average_speed": 75.0,
+        "average_acceleration": 0.32,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 49.55,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 50.06,
+        "average_acceleration": 0.11,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.26,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 52.36,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 50.93,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 51.98,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 56.38,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 0,
+        "hard_braking_rate": 0.0
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 53.34,
+        "average_acceleration": 0.13,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 52.1,
+        "average_acceleration": 0.13,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.05,
+        "average_acceleration": 0.16,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 50.84,
+        "average_acceleration": 0.18,
+        "hard_braking_events": 2,
+        "hard_braking_rate": 6.67
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 54.25,
+        "average_acceleration": 0.14,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 53.73,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 53.11,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 52.68,
+        "average_acceleration": 0.15,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
+    },
+    {
+        "driver_style": "new_driver",
+        "average_speed": 51.3,
+        "average_acceleration": 0.17,
+        "hard_braking_events": 1,
+        "hard_braking_rate": 3.33
     }
 ]
